@@ -14,7 +14,9 @@
 			<name>IPFS</name>
 			<!-- <url>file:///tmp/test</url>  -->
 			<!-- <url>https://bafkt5edpkmbejifojfarn2wawtc62t36gy4te7bftd64cgjsy7gv2ui.thread.hub.textile.io/buckets/bafzbeidxwtnl7mwj62s35b75cezp2lzsbbecwcv3gt4kmz5qsc2zlqjhsu</url> -->
-			<url>https://bafybeib5mrm7b2bvnyx3mseeknfsxwvnqas2od2g74sqat6w3m5d3bbfhy.ipfs.dweb.link/</url>
+			<!-- <url>https://bafybeib5mrm7b2bvnyx3mseeknfsxwvnqas2od2g74sqat6w3m5d3bbfhy.ipfs.dweb.link/</url> -->
+			<!-- <url>https://ericglau2-team-bucket.storage.fleek.co/test</url> -->
+			<url>ipfs://bafybeib5mrm7b2bvnyx3mseeknfsxwvnqas2od2g74sqat6w3m5d3bbfhy/com/github/ericglau/project-a</url>
 			<snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -31,5 +33,14 @@
 			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
+
+	<build>
+        <extensions>
+            <extension>
+                <groupId>com.github.ericglau</groupId>
+                <artifactId>wagon-ipfs</artifactId>
+            </extension>
+        </extensions>
+    </build>
 
 </project>
