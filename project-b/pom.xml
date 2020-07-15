@@ -38,7 +38,7 @@
         <extensions>
             <extension>
                 <groupId>com.github.ericglau</groupId>
-                <artifactId>wagon-ipfs</artifactId>
+                <artifactId>wagon-ipfs-http</artifactId>
             </extension>
         </extensions>
     </build>
