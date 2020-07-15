@@ -603,7 +603,7 @@ public abstract class AbstractIpfsClientWagon
 
     public void openConnectionInternal()
     {
-        repository.setUrl( getURL( repository ) .replace("ipfs://", "https://ipfs.io/ipfs/") );
+        repository.setUrl( getURL( repository ) );
 
         credentialsProvider = new BasicCredentialsProvider();
         authCache = new BasicAuthCache();
@@ -1081,7 +1081,7 @@ public abstract class AbstractIpfsClientWagon
      */
     protected String getURL( Repository repository )
     {
-        return repository.getUrl();
+        return repository.getUrl().replace("ipfs://", "https://ipfs.io/ipfs/");
     }
 
     public HttpConfiguration getHttpConfiguration()
