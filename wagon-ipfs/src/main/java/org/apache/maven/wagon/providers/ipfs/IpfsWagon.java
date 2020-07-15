@@ -41,6 +41,8 @@ import org.apache.maven.wagon.repository.RepositoryPermissions;
 import org.apache.maven.wagon.resource.Resource;
 
 import io.ipfs.api.IPFS;
+import io.ipfs.api.MerkleNode;
+import io.ipfs.api.NamedStreamable;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -64,7 +66,7 @@ public class IpfsWagon
     extends StreamWagon
 {
     private FTPClient ftp;
-    //private IPFS ipfs = new IPFS("/ip4/127.0.0.1/tcp/5001");
+    private IPFS ipfs;
 
     /**
      * @plexus.configuration default-value="true"
@@ -90,106 +92,7 @@ public class IpfsWagon
     protected void openConnectionInternal()
         throws ConnectionException, AuthenticationException
     {
-        AuthenticationInfo authInfo = getAuthenticationInfo();
-
-        if ( authInfo == null )
-        {
-            throw new NullPointerException( "authenticationInfo cannot be null" );
-        }
-
-        if ( authInfo.getUserName() == null )
-        {
-            authInfo.setUserName( System.getProperty( "user.name" ) );
-        }
-
-        String username = authInfo.getUserName();
-
-        String password = authInfo.getPassword();
-
-        if ( username == null )
-        {
-            throw new AuthenticationException( "Username not specified for repository " + getRepository().getId() );
-        }
-        if ( password == null )
-        {
-            throw new AuthenticationException( "Password not specified for repository " + getRepository().getId() );
-        }
-
-        String host = getRepository().getHost();
-
-        ftp = createClient();
-        ftp.setDefaultTimeout( getTimeout() );
-        ftp.setDataTimeout( getTimeout() );
-        ftp.setControlEncoding( getControlEncoding() );
-
-        ftp.addProtocolCommandListener( new PrintCommandListener( this ) );
-
-        try
-        {
-            if ( getRepository().getPort() != WagonConstants.UNKNOWN_PORT )
-            {
-                ftp.connect( host, getRepository().getPort() );
-            }
-            else
-            {
-                ftp.connect( host );
-            }
-
-            // After connection attempt, you should check the reply code to
-            // verify
-            // success.
-            int reply = ftp.getReplyCode();
-
-            if ( !FTPReply.isPositiveCompletion( reply ) )
-            {
-                ftp.disconnect();
-
-                throw new AuthenticationException( "FTP server refused connection." );
-            }
-        }
-        catch ( IOException e )
-        {
-            if ( ftp.isConnected() )
-            {
-                try
-                {
-                    fireSessionError( e );
-
-                    ftp.disconnect();
-                }
-                catch ( IOException f )
-                {
-                    // do nothing
-                }
-            }
-
-            throw new AuthenticationException( "Could not connect to server.", e );
-        }
-
-        try
-        {
-            if ( !ftp.login( username, password ) )
-            {
-                throw new AuthenticationException( "Cannot login to remote system" );
-            }
-
-            fireSessionDebug( "Remote system is " + ftp.getSystemName() );
-
-            // Set to binary mode.
-            ftp.setFileType( FTP.BINARY_FILE_TYPE );
-            ftp.setListHiddenFiles( true );
-
-            // Use passive mode as default because most of us are
-            // behind firewalls these days.
-            if ( isPassiveMode() )
-            {
-                ftp.enterLocalPassiveMode();
-            }
-        }
-        catch ( IOException e )
-        {
-            throw new ConnectionException( "Cannot login to remote system", e );
-        }
+        ipfs = new IPFS("ipfs.infura.io", 5001, "/api/v0/", true);
     }
 
     protected FTPClient createClient()
@@ -200,33 +103,14 @@ public class IpfsWagon
     @Override
     protected void firePutCompleted( Resource resource, File file )
     {
-        try
-        {
-            // TODO [BP]: verify the order is correct
-            ftp.completePendingCommand();
-
-            RepositoryPermissions permissions = repository.getPermissions();
-
-            if ( permissions != null && permissions.getGroup() != null )
-            {
-                // ignore failures
-                ftp.sendSiteCommand( "CHGRP " + permissions.getGroup() + " " + resource.getName() );
-            }
-
-            if ( permissions != null && permissions.getFileMode() != null )
-            {
-                // ignore failures
-                ftp.sendSiteCommand( "CHMOD " + permissions.getFileMode() + " " + resource.getName() );
-            }
+        NamedStreamable.FileWrapper nsfile = new NamedStreamable.FileWrapper(file);
+        try {
+            MerkleNode addResult = ipfs.add(nsfile).get(0);
+            super.firePutCompleted( resource, file );
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
-        catch ( IOException e )
-        {
-            // TODO: handle
-            // michal I am not sure  what error means in that context
-            // I think that we will be able to recover or simply we will fail later on
-        }
-
-        super.firePutCompleted( resource, file );
     }
 
     @Override
@@ -360,9 +244,11 @@ public class IpfsWagon
 
         Resource resource = inputData.getResource();
 
+       // ipfs.get(hash)
+
         try
         {
-            ftpChangeDirectory( resource );
+            //ftpChangeDirectory( resource );
 
             String filename = PathUtils.filename( resource.getName() );
             FTPFile[] ftpFiles = ftp.listFiles( filename );
