@@ -19,121 +19,820 @@ package org.apache.maven.wagon.providers.ipfs;
  * under the License.
  */
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpException;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.net.ProtocolCommandEvent;
+import org.apache.commons.net.ProtocolCommandListener;
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPReply;
+import org.apache.maven.wagon.ConnectionException;
+import org.apache.maven.wagon.InputData;
+import org.apache.maven.wagon.OutputData;
+import org.apache.maven.wagon.PathUtils;
 import org.apache.maven.wagon.ResourceDoesNotExistException;
+import org.apache.maven.wagon.StreamWagon;
 import org.apache.maven.wagon.TransferFailedException;
+import org.apache.maven.wagon.WagonConstants;
+import org.apache.maven.wagon.authentication.AuthenticationException;
+import org.apache.maven.wagon.authentication.AuthenticationInfo;
 import org.apache.maven.wagon.authorization.AuthorizationException;
-import org.apache.maven.wagon.shared.http.HtmlFileListParser;
-import org.apache.maven.wagon.shared.http.HttpMessageUtils;
+import org.apache.maven.wagon.repository.RepositoryPermissions;
+import org.apache.maven.wagon.resource.Resource;
 
+import io.ipfs.api.IPFS;
+
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Collections;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
-import static org.apache.maven.wagon.shared.http.HttpMessageUtils.formatResourceDoesNotExistMessage;
-import static org.apache.maven.wagon.shared.http.HttpMessageUtils.formatTransferDebugMessage;
-import static org.apache.maven.wagon.shared.http.HttpMessageUtils.formatTransferFailedMessage;
 
 /**
- * @author <a href="michal.maczka@dimatics.com">Michal Maczka</a>
+ * IpfsWagon
+ *
+ *
+ * @plexus.component role="org.apache.maven.wagon.Wagon"
+ * role-hint="ipfs"
+ * instantiation-strategy="per-lookup"
  */
 public class IpfsWagon
-    extends AbstractIpfsClientWagon
+    extends StreamWagon
 {
+    private FTPClient ftp;
+    //private IPFS ipfs = new IPFS("/ip4/127.0.0.1/tcp/5001");
 
-    public List<String> getFileList( String destinationDirectory )
-        throws AuthorizationException, ResourceDoesNotExistException, TransferFailedException
+    /**
+     * @plexus.configuration default-value="true"
+     */
+    private boolean passiveMode = true;
+
+    /**
+     * @plexus.configuration default-value="ISO-8859-1"
+     */
+    private String controlEncoding = FTP.DEFAULT_CONTROL_ENCODING;
+
+    public boolean isPassiveMode()
     {
-        return getFileList( getInitialBackoffSeconds(), destinationDirectory );
+        return passiveMode;
     }
 
-    private List<String> getFileList( int wait, String destinationDirectory )
-        throws TransferFailedException, ResourceDoesNotExistException, AuthorizationException
+    public void setPassiveMode( boolean passiveMode )
     {
-        if ( destinationDirectory.length() > 0 && !destinationDirectory.endsWith( "/" ) )
+        this.passiveMode = passiveMode;
+    }
+
+    @Override
+    protected void openConnectionInternal()
+        throws ConnectionException, AuthenticationException
+    {
+        AuthenticationInfo authInfo = getAuthenticationInfo();
+
+        if ( authInfo == null )
         {
-            destinationDirectory += "/";
+            throw new NullPointerException( "authenticationInfo cannot be null" );
         }
 
-        String url = getRepository().getUrl() + "/" + destinationDirectory;
+        if ( authInfo.getUserName() == null )
+        {
+            authInfo.setUserName( System.getProperty( "user.name" ) );
+        }
 
-        // done in AbstractIpfsClientWagon
-        // url.replace("ipfs://", "https://ipfs.io/ipfs/");
+        String username = authInfo.getUserName();
 
-        HttpGet getMethod = new HttpGet( url );
+        String password = authInfo.getPassword();
+
+        if ( username == null )
+        {
+            throw new AuthenticationException( "Username not specified for repository " + getRepository().getId() );
+        }
+        if ( password == null )
+        {
+            throw new AuthenticationException( "Password not specified for repository " + getRepository().getId() );
+        }
+
+        String host = getRepository().getHost();
+
+        ftp = createClient();
+        ftp.setDefaultTimeout( getTimeout() );
+        ftp.setDataTimeout( getTimeout() );
+        ftp.setControlEncoding( getControlEncoding() );
+
+        ftp.addProtocolCommandListener( new PrintCommandListener( this ) );
 
         try
         {
-            CloseableHttpResponse response = execute( getMethod );
-            try
+            if ( getRepository().getPort() != WagonConstants.UNKNOWN_PORT )
             {
-                String reasonPhrase = response.getStatusLine().getReasonPhrase();
-                int statusCode = response.getStatusLine().getStatusCode();
-
-                fireTransferDebug( formatTransferDebugMessage( url, statusCode, reasonPhrase, getProxyInfo() ) );
-
-                switch ( statusCode )
-                {
-                    case HttpStatus.SC_OK:
-                        break;
-
-                    // TODO Move 401/407 to AuthenticationException after WAGON-587
-                    case HttpStatus.SC_FORBIDDEN:
-                    case HttpStatus.SC_UNAUTHORIZED:
-                    case HttpStatus.SC_PROXY_AUTHENTICATION_REQUIRED:
-                        EntityUtils.consumeQuietly( response.getEntity() );
-                        throw new AuthorizationException( HttpMessageUtils.formatAuthorizationMessage( url, statusCode,
-                                reasonPhrase, getProxyInfo() ) );
-
-                    case HttpStatus.SC_NOT_FOUND:
-                    case HttpStatus.SC_GONE:
-                        EntityUtils.consumeQuietly( response.getEntity() );
-                        throw new ResourceDoesNotExistException( formatResourceDoesNotExistMessage( url, statusCode,
-                                reasonPhrase, getProxyInfo() ) );
-
-                    case SC_TOO_MANY_REQUESTS:
-                        EntityUtils.consumeQuietly( response.getEntity() );
-                        return getFileList( backoff( wait, url ), destinationDirectory );
-
-                    //add more entries here
-                    default:
-                        EntityUtils.consumeQuietly( response.getEntity() );
-                        throw new TransferFailedException( formatTransferFailedMessage( url, statusCode, reasonPhrase,
-                                getProxyInfo() ) );
-                }
-                HttpEntity entity = response.getEntity();
-                if ( entity != null )
-                {
-                    return HtmlFileListParser.parseFileList( url, entity.getContent() );
-                }
-                else
-                {
-                    return Collections.emptyList();
-                }
-
+                ftp.connect( host, getRepository().getPort() );
             }
-            finally
+            else
             {
-                response.close();
+                ftp.connect( host );
+            }
+
+            // After connection attempt, you should check the reply code to
+            // verify
+            // success.
+            int reply = ftp.getReplyCode();
+
+            if ( !FTPReply.isPositiveCompletion( reply ) )
+            {
+                ftp.disconnect();
+
+                throw new AuthenticationException( "FTP server refused connection." );
             }
         }
         catch ( IOException e )
         {
-            throw new TransferFailedException( "Could not read response body.", e );
+            if ( ftp.isConnected() )
+            {
+                try
+                {
+                    fireSessionError( e );
+
+                    ftp.disconnect();
+                }
+                catch ( IOException f )
+                {
+                    // do nothing
+                }
+            }
+
+            throw new AuthenticationException( "Could not connect to server.", e );
         }
-        catch ( HttpException e )
+
+        try
         {
-            throw new TransferFailedException( "Could not read response body.", e );
+            if ( !ftp.login( username, password ) )
+            {
+                throw new AuthenticationException( "Cannot login to remote system" );
+            }
+
+            fireSessionDebug( "Remote system is " + ftp.getSystemName() );
+
+            // Set to binary mode.
+            ftp.setFileType( FTP.BINARY_FILE_TYPE );
+            ftp.setListHiddenFiles( true );
+
+            // Use passive mode as default because most of us are
+            // behind firewalls these days.
+            if ( isPassiveMode() )
+            {
+                ftp.enterLocalPassiveMode();
+            }
         }
-        catch ( InterruptedException e )
+        catch ( IOException e )
         {
-            throw new TransferFailedException( "Unable to wait for resource.", e );
+            throw new ConnectionException( "Cannot login to remote system", e );
         }
     }
 
+    protected FTPClient createClient()
+    {
+        return new FTPClient();
+    }
+
+    @Override
+    protected void firePutCompleted( Resource resource, File file )
+    {
+        try
+        {
+            // TODO [BP]: verify the order is correct
+            ftp.completePendingCommand();
+
+            RepositoryPermissions permissions = repository.getPermissions();
+
+            if ( permissions != null && permissions.getGroup() != null )
+            {
+                // ignore failures
+                ftp.sendSiteCommand( "CHGRP " + permissions.getGroup() + " " + resource.getName() );
+            }
+
+            if ( permissions != null && permissions.getFileMode() != null )
+            {
+                // ignore failures
+                ftp.sendSiteCommand( "CHMOD " + permissions.getFileMode() + " " + resource.getName() );
+            }
+        }
+        catch ( IOException e )
+        {
+            // TODO: handle
+            // michal I am not sure  what error means in that context
+            // I think that we will be able to recover or simply we will fail later on
+        }
+
+        super.firePutCompleted( resource, file );
+    }
+
+    @Override
+    protected void fireGetCompleted( Resource resource, File localFile )
+    {
+        try
+        {
+            ftp.completePendingCommand();
+        }
+        catch ( IOException e )
+        {
+            // TODO: handle
+            // michal I am not sure  what error means in that context
+            // actually I am not even sure why we have to invoke that command
+            // I think that we will be able to recover or simply we will fail later on
+        }
+        super.fireGetCompleted( resource, localFile );
+    }
+
+    @Override
+    public void closeConnection()
+        throws ConnectionException
+    {
+        if ( ftp != null && ftp.isConnected() )
+        {
+            try
+            {
+                // This is a NPE rethink shutting down the streams
+                ftp.disconnect();
+            }
+            catch ( IOException e )
+            {
+                throw new ConnectionException( "Failed to close connection to FTP repository", e );
+            }
+        }
+    }
+
+    @Override
+    public void fillOutputData( OutputData outputData )
+        throws TransferFailedException
+    {
+        OutputStream os;
+
+        Resource resource = outputData.getResource();
+
+        RepositoryPermissions permissions = repository.getPermissions();
+
+        try
+        {
+            if ( !ftp.changeWorkingDirectory( getRepository().getBasedir() ) )
+            {
+                throw new TransferFailedException(
+                    "Required directory: '" + getRepository().getBasedir() + "' " + "is missing" );
+            }
+
+            String[] dirs = PathUtils.dirnames( resource.getName() );
+
+            for ( String dir : dirs )
+            {
+                boolean dirChanged = ftp.changeWorkingDirectory( dir );
+
+                if ( !dirChanged )
+                {
+                    // first, try to create it
+                    boolean success = ftp.makeDirectory( dir );
+
+                    if ( success )
+                    {
+                        if ( permissions != null && permissions.getGroup() != null )
+                        {
+                            // ignore failures
+                            ftp.sendSiteCommand( "CHGRP " + permissions.getGroup() + " " + dir );
+                        }
+
+                        if ( permissions != null && permissions.getDirectoryMode() != null )
+                        {
+                            // ignore failures
+                            ftp.sendSiteCommand( "CHMOD " + permissions.getDirectoryMode() + " " + dir );
+                        }
+
+                        dirChanged = ftp.changeWorkingDirectory( dir );
+                    }
+                }
+
+                if ( !dirChanged )
+                {
+                    throw new TransferFailedException( "Unable to create directory " + dir );
+                }
+            }
+
+            // we come back to original basedir so
+            // FTP wagon is ready for next requests
+            if ( !ftp.changeWorkingDirectory( getRepository().getBasedir() ) )
+            {
+                throw new TransferFailedException( "Unable to return to the base directory" );
+            }
+
+            os = ftp.storeFileStream( resource.getName() );
+
+            if ( os == null )
+            {
+                String msg =
+                    "Cannot transfer resource:  '" + resource + "'. Output stream is null. FTP Server response: "
+                        + ftp.getReplyString();
+
+                throw new TransferFailedException( msg );
+
+            }
+
+            fireTransferDebug( "resource = " + resource );
+
+        }
+        catch ( IOException e )
+        {
+            throw new TransferFailedException( "Error transferring over FTP", e );
+        }
+
+        outputData.setOutputStream( os );
+
+    }
+
+    // ----------------------------------------------------------------------
+    //
+    // ----------------------------------------------------------------------
+
+    @Override
+    public void fillInputData( InputData inputData )
+        throws TransferFailedException, ResourceDoesNotExistException
+    {
+        InputStream is;
+
+        Resource resource = inputData.getResource();
+
+        try
+        {
+            ftpChangeDirectory( resource );
+
+            String filename = PathUtils.filename( resource.getName() );
+            FTPFile[] ftpFiles = ftp.listFiles( filename );
+
+            if ( ftpFiles == null || ftpFiles.length <= 0 )
+            {
+                throw new ResourceDoesNotExistException( "Could not find file: '" + resource + "'" );
+            }
+
+            long contentLength = ftpFiles[0].getSize();
+
+            //@todo check how it works! javadoc of common login says:
+            // Returns the file timestamp. This usually the last modification time.
+            //
+            Calendar timestamp = ftpFiles[0].getTimestamp();
+            long lastModified = timestamp != null ? timestamp.getTimeInMillis() : 0;
+
+            resource.setContentLength( contentLength );
+
+            resource.setLastModified( lastModified );
+
+            is = ftp.retrieveFileStream( filename );
+        }
+        catch ( IOException e )
+        {
+            throw new TransferFailedException( "Error transferring file via FTP", e );
+        }
+
+        inputData.setInputStream( is );
+    }
+
+    private void ftpChangeDirectory( Resource resource )
+        throws IOException, TransferFailedException, ResourceDoesNotExistException
+    {
+        if ( !ftp.changeWorkingDirectory( getRepository().getBasedir() ) )
+        {
+            throw new ResourceDoesNotExistException(
+                "Required directory: '" + getRepository().getBasedir() + "' " + "is missing" );
+        }
+
+        String[] dirs = PathUtils.dirnames( resource.getName() );
+
+        for ( String dir : dirs )
+        {
+            boolean dirChanged = ftp.changeWorkingDirectory( dir );
+
+            if ( !dirChanged )
+            {
+                String msg = "Resource " + resource + " not found. Directory " + dir + " does not exist";
+
+                throw new ResourceDoesNotExistException( msg );
+            }
+        }
+    }
+
+    /**
+     *
+     */
+    public class PrintCommandListener
+        implements ProtocolCommandListener
+    {
+        private IpfsWagon wagon;
+
+        public PrintCommandListener( IpfsWagon wagon )
+        {
+            this.wagon = wagon;
+        }
+
+        @Override
+        public void protocolCommandSent( ProtocolCommandEvent event )
+        {
+            wagon.fireSessionDebug( "Command sent: " + event.getMessage() );
+
+        }
+
+        @Override
+        public void protocolReplyReceived( ProtocolCommandEvent event )
+        {
+            wagon.fireSessionDebug( "Reply received: " + event.getMessage() );
+        }
+    }
+
+    @Override
+    protected void fireSessionDebug( String msg )
+    {
+        super.fireSessionDebug( msg );
+    }
+
+    @Override
+    public List<String> getFileList( String destinationDirectory )
+        throws TransferFailedException, ResourceDoesNotExistException, AuthorizationException
+    {
+        Resource resource = new Resource( destinationDirectory );
+
+        try
+        {
+            ftpChangeDirectory( resource );
+
+            String filename = PathUtils.filename( resource.getName() );
+            FTPFile[] ftpFiles = ftp.listFiles( filename );
+
+            if ( ftpFiles == null || ftpFiles.length <= 0 )
+            {
+                throw new ResourceDoesNotExistException( "Could not find file: '" + resource + "'" );
+            }
+
+            List<String> ret = new ArrayList<String>();
+            for ( FTPFile file : ftpFiles )
+            {
+                String name = file.getName();
+
+                if ( file.isDirectory() && !name.endsWith( "/" ) )
+                {
+                    name += "/";
+                }
+
+                ret.add( name );
+            }
+
+            return ret;
+        }
+        catch ( IOException e )
+        {
+            throw new TransferFailedException( "Error transferring file via FTP", e );
+        }
+    }
+
+    @Override
+    public boolean resourceExists( String resourceName )
+        throws TransferFailedException, AuthorizationException
+    {
+        Resource resource = new Resource( resourceName );
+
+        try
+        {
+            ftpChangeDirectory( resource );
+
+            String filename = PathUtils.filename( resource.getName() );
+            int status = ftp.stat( filename );
+
+            return ( ( status == FTPReply.FILE_STATUS ) || ( status == FTPReply.DIRECTORY_STATUS ) || ( status
+                == FTPReply.FILE_STATUS_OK ) // not in the RFC but used by some FTP servers
+                || ( status == FTPReply.COMMAND_OK )     // not in the RFC but used by some FTP servers
+                || ( status == FTPReply.SYSTEM_STATUS ) );
+        }
+        catch ( IOException e )
+        {
+            throw new TransferFailedException( "Error transferring file via FTP", e );
+        }
+        catch ( ResourceDoesNotExistException e )
+        {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean supportsDirectoryCopy()
+    {
+        return true;
+    }
+
+    @Override
+    public void putDirectory( File sourceDirectory, String destinationDirectory )
+        throws TransferFailedException, ResourceDoesNotExistException, AuthorizationException
+    {
+
+        // Change to root.
+        try
+        {
+            if ( !ftp.changeWorkingDirectory( getRepository().getBasedir() ) )
+            {
+                RepositoryPermissions permissions = getRepository().getPermissions();
+                if ( !makeFtpDirectoryRecursive( getRepository().getBasedir(), permissions ) )
+                {
+                    throw new TransferFailedException(
+                        "Required directory: '" + getRepository().getBasedir() + "' " + "could not get created" );
+                }
+
+                // try it again sam ...
+                if ( !ftp.changeWorkingDirectory( getRepository().getBasedir() ) )
+                {
+                    throw new TransferFailedException( "Required directory: '" + getRepository().getBasedir() + "' "
+                                                           + "is missing and could not get created" );
+                }
+            }
+        }
+        catch ( IOException e )
+        {
+            throw new TransferFailedException( "Cannot change to root path " + getRepository().getBasedir(), e );
+        }
+
+        fireTransferDebug(
+            "Recursively uploading directory " + sourceDirectory.getAbsolutePath() + " as " + destinationDirectory );
+        ftpRecursivePut( sourceDirectory, destinationDirectory );
+    }
+
+    private void ftpRecursivePut( File sourceFile, String fileName )
+        throws TransferFailedException
+    {
+        final RepositoryPermissions permissions = repository.getPermissions();
+
+        fireTransferDebug( "processing = " + sourceFile.getAbsolutePath() + " as " + fileName );
+
+        if ( sourceFile.isDirectory() )
+        {
+            if ( !fileName.equals( "." ) )
+            {
+                try
+                {
+                    // change directory if it already exists.
+                    if ( !ftp.changeWorkingDirectory( fileName ) )
+                    {
+                        // first, try to create it
+                        if ( makeFtpDirectoryRecursive( fileName, permissions ) )
+                        {
+                            if ( !ftp.changeWorkingDirectory( fileName ) )
+                            {
+                                throw new TransferFailedException(
+                                    "Unable to change cwd on ftp server to " + fileName + " when processing "
+                                        + sourceFile.getAbsolutePath() );
+                            }
+                        }
+                        else
+                        {
+                            throw new TransferFailedException(
+                                "Unable to create directory " + fileName + " when processing "
+                                    + sourceFile.getAbsolutePath() );
+                        }
+                    }
+                }
+                catch ( IOException e )
+                {
+                    throw new TransferFailedException(
+                        "IOException caught while processing path at " + sourceFile.getAbsolutePath(), e );
+                }
+            }
+
+            File[] files = sourceFile.listFiles();
+            if ( files != null && files.length > 0 )
+            {
+                fireTransferDebug( "listing children of = " + sourceFile.getAbsolutePath() + " found " + files.length );
+
+                // Directories first, then files. Let's go deep early.
+                for ( File file : files )
+                {
+                    if ( file.isDirectory() )
+                    {
+                        ftpRecursivePut( file, file.getName() );
+                    }
+                }
+                for ( File file : files )
+                {
+                    if ( !file.isDirectory() )
+                    {
+                        ftpRecursivePut( file, file.getName() );
+                    }
+                }
+            }
+
+            // Step back up a directory once we're done with the contents of this one.
+            try
+            {
+                ftp.changeToParentDirectory();
+            }
+            catch ( IOException e )
+            {
+                throw new TransferFailedException( "IOException caught while attempting to step up to parent directory"
+                                                       + " after successfully processing "
+                                                       + sourceFile.getAbsolutePath(), e );
+            }
+        }
+        else
+        {
+            // Oh how I hope and pray, in denial, but today I am still just a file.
+
+            FileInputStream sourceFileStream = null;
+            try
+            {
+                sourceFileStream = new FileInputStream( sourceFile );
+
+                // It's a file. Upload it in the current directory.
+                if ( ftp.storeFile( fileName, sourceFileStream ) )
+                {
+                    if ( permissions != null )
+                    {
+                        // Process permissions; note that if we get errors or exceptions here, they are ignored.
+                        // This appears to be a conscious decision, based on other parts of this code.
+                        String group = permissions.getGroup();
+                        if ( group != null )
+                        {
+                            try
+                            {
+                                ftp.sendSiteCommand( "CHGRP " + permissions.getGroup() );
+                            }
+                            catch ( IOException e )
+                            {
+                                // ignore
+                            }
+                        }
+                        String mode = permissions.getFileMode();
+                        if ( mode != null )
+                        {
+                            try
+                            {
+                                ftp.sendSiteCommand( "CHMOD " + permissions.getDirectoryMode() );
+                            }
+                            catch ( IOException e )
+                            {
+                                // ignore
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    String msg =
+                        "Cannot transfer resource:  '" + sourceFile.getAbsolutePath() + "' FTP Server response: "
+                            + ftp.getReplyString();
+                    throw new TransferFailedException( msg );
+                }
+
+                sourceFileStream.close();
+                sourceFileStream = null;
+            }
+            catch ( IOException e )
+            {
+                throw new TransferFailedException(
+                    "IOException caught while attempting to upload " + sourceFile.getAbsolutePath(), e );
+            }
+            finally
+            {
+                IOUtils.closeQuietly( sourceFileStream );
+            }
+
+        }
+
+        fireTransferDebug( "completed = " + sourceFile.getAbsolutePath() );
+    }
+
+    /**
+     * Set the permissions (if given) for the underlying folder.
+     * Note: Since the FTP SITE command might be server dependent, we cannot
+     * rely on the functionality available on each FTP server!
+     * So we can only try and hope it works (and catch away all Exceptions).
+     *
+     * @param permissions group and directory permissions
+     */
+    private void setPermissions( RepositoryPermissions permissions )
+    {
+        if ( permissions != null )
+        {
+            // Process permissions; note that if we get errors or exceptions here, they are ignored.
+            // This appears to be a conscious decision, based on other parts of this code.
+            String group = permissions.getGroup();
+            if ( group != null )
+            {
+                try
+                {
+                    ftp.sendSiteCommand( "CHGRP " + permissions.getGroup() );
+                }
+                catch ( IOException e )
+                {
+                    // ignore
+                }
+            }
+            String mode = permissions.getDirectoryMode();
+            if ( mode != null )
+            {
+                try
+                {
+                    ftp.sendSiteCommand( "CHMOD " + permissions.getDirectoryMode() );
+                }
+                catch ( IOException e )
+                {
+                    // ignore
+                }
+            }
+        }
+    }
+
+    /**
+     * Recursively create directories.
+     *
+     * @param fileName    the path to create (might be nested)
+     * @param permissions
+     * @return ok
+     * @throws IOException
+     */
+    private boolean makeFtpDirectoryRecursive( String fileName, RepositoryPermissions permissions )
+        throws IOException
+    {
+        if ( fileName == null || fileName.length() == 0
+            || fileName.replace( '/', '_' ).trim().length() == 0 ) // if a string is '/', '//' or similar
+        {
+            return false;
+        }
+
+        int slashPos = fileName.indexOf( "/" );
+        String oldPwd = null;
+        boolean ok = true;
+
+        if ( slashPos == 0 )
+        {
+            // this is an absolute directory
+            oldPwd = ftp.printWorkingDirectory();
+
+            // start with the root
+            ftp.changeWorkingDirectory( "/" );
+            fileName = fileName.substring( 1 );
+
+            // look up the next path separator
+            slashPos = fileName.indexOf( "/" );
+        }
+
+        if ( slashPos >= 0 && slashPos < ( fileName.length() - 1 ) ) // not only a slash at the end, like in 'newDir/'
+        {
+            if ( oldPwd == null )
+            {
+                oldPwd = ftp.printWorkingDirectory();
+            }
+
+            String nextDir = fileName.substring( 0, slashPos );
+
+            boolean changedDir = false;
+            // we only create the nextDir if it doesn't yet exist
+            if ( !ftp.changeWorkingDirectory( nextDir ) )
+            {
+                ok &= ftp.makeDirectory( nextDir );
+            }
+            else
+            {
+                changedDir = true;
+            }
+
+            if ( ok )
+            {
+                // set the permissions for the freshly created directory
+                setPermissions( permissions );
+
+                if ( !changedDir )
+                {
+                    ftp.changeWorkingDirectory( nextDir );
+                }
+
+                // now create the deeper directories
+                final String remainingDirs = fileName.substring( slashPos + 1 );
+                ok &= makeFtpDirectoryRecursive( remainingDirs, permissions );
+            }
+        }
+        else
+        {
+            ok = ftp.makeDirectory( fileName );
+        }
+
+        if ( oldPwd != null )
+        {
+            // change back to the old working directory
+            ftp.changeWorkingDirectory( oldPwd );
+        }
+
+        return ok;
+    }
+
+    public String getControlEncoding()
+    {
+        return controlEncoding;
+    }
+
+    public void setControlEncoding( String controlEncoding )
+    {
+        this.controlEncoding = controlEncoding;
+    }
 }

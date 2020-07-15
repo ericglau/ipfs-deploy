@@ -1,4 +1,4 @@
-  <?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
   <!--
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -33,6 +33,19 @@
       Wagon provider that gets and puts artifacts from and to remote server using IPFS protocol
     </description>
   
+    <properties>
+      <enforcer.skip>true</enforcer.skip>
+      <rat.skip>true</rat.skip>
+      <checkstyle.skip>true</checkstyle.skip>
+    </properties>
+
+    <repositories>
+      <repository>
+          <id>jitpack.io</id>
+          <url>https://jitpack.io</url>
+      </repository>
+    </repositories>
+
     <dependencies>
       <dependency>
         <groupId>commons-net</groupId>
@@ -58,6 +71,13 @@
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
       </dependency>
+
+      <dependency>
+        <groupId>com.github.ipfs</groupId>
+        <artifactId>java-ipfs-http-client</artifactId>
+        <version>1.2.3</version>
+      </dependency>
+
     </dependencies>
   
   </project>
