@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.lang.ProcessBuilder.Redirect;
 import java.util.concurrent.Executors;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -35,7 +36,40 @@ public class DeployMojo extends AbstractMojo {
     public void initBucket(String directory, String artifactId) throws MojoExecutionException {
         runCommand(directory, "pwd", "Enter a name for your new bucket", "");
         runCommand(directory, "hub buck init", "Enter a name for your new bucket", "");
-        runCommand(directory, "hub buck push -y", null, null);
+        runCommandInteractive(directory, "hub buck push -y");
+    }
+
+
+    private void runCommandInteractive(String directory, String command) throws MojoExecutionException {
+        try {
+
+            // ProcessBuilder builder = new ProcessBuilder();
+            // builder.directory(new File(directory));
+            // builder.command("bash", "-c", command);
+            // builder.redirectOutput(Redirect.INHERIT);
+            // builder.redirectError(Redirect.INHERIT);
+            // System.out.println("Starting async command " + builder.command());
+
+            // String s;
+            // Process p = Runtime.getRuntime().exec(command, null, new File(directory));
+            // BufferedReader br = new BufferedReader(
+            //     new InputStreamReader(p.getInputStream()));
+            // while ((s = br.readLine()) != null)
+            //     System.out.println("line: " + s);
+            // p.waitFor();
+            // System.out.println ("exit: " + p.exitValue());
+            // p.destroy();
+
+            ProcessBuilder builder = new ProcessBuilder();
+            builder.directory(new File(directory));
+            builder.command("bash", "-c", command);
+            builder.redirectInput(Redirect.INHERIT);
+            builder.redirectOutput(Redirect.INHERIT);
+            builder.redirectError(Redirect.INHERIT);
+            builder.start().waitFor();
+        } catch (IOException | InterruptedException e) {
+            throw new MojoExecutionException("Execution of command failed", e);
+        }
     }
 
     private void runCommand(String directory, String command, String lookForString, String enterInput) throws MojoExecutionException {
@@ -44,6 +78,8 @@ public class DeployMojo extends AbstractMojo {
             ProcessBuilder builder = new ProcessBuilder();
             builder.directory(new File(directory));
             builder.command("bash", "-c", command);
+            //builder.redirectOutput(Redirect.INHERIT);
+            builder.redirectError(Redirect.INHERIT);
             Process process = builder.start();
 
             //Process process = Runtime.getRuntime().exec("bash -c \"" + command + "\"", null, new File(directory));
@@ -51,23 +87,28 @@ public class DeployMojo extends AbstractMojo {
             OutputStream outputStream = process.getOutputStream();
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
 
-            try {
-                for (String line; (line = reader.readLine()) != null;) {
-                    System.out.println("FOUND OUTPUT: " + line);
-                    if (lookForString != null && line.contains(lookForString)) {
-                        System.out.println("FOUND STRING: " + lookForString);
-                        writer.write(enterInput + "\n");
-                        writer.flush();
+            if (lookForString != null) {
+                try {
+                    for (String line; (line = reader.readLine()) != null;) {
+                        System.out.println("FOUND OUTPUT: " + line);
+                        if (line.contains(lookForString)) {
+                            System.out.println("FOUND STRING: " + lookForString);
+                            writer.write(enterInput + "\n");
+                            writer.flush();
+                        }
+                    }
+                } catch (IOException e) {
+                    throw new MojoExecutionException("IO EXCEPTION " + e.getMessage(), e);
+                } finally {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
                     }
                 }
-            } catch (IOException e) {
-                throw new MojoExecutionException("IO EXCEPTION " + e.getMessage(), e);
-            } finally {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                }
+            } else {
+                reader.close();
             }
+
 
             int exitCode = process.waitFor();
 
