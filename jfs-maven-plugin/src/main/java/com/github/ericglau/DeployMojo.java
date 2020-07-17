@@ -76,6 +76,9 @@ public class DeployMojo extends AbstractMojo {
                             System.out.println("FOUND STRING: " + lookForString);
                             writer.write(enterInput + "\n");
                             writer.flush();
+                        } else if (line.contains("already initialized")) {
+                            System.out.println("Bucket is already initialized");
+                            return;
                         }
                     }
                 } catch (IOException e) {
