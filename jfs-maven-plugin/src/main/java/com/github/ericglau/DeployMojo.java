@@ -42,24 +42,6 @@ public class DeployMojo extends AbstractMojo {
 
     private void runCommandInteractive(String directory, String command) throws MojoExecutionException {
         try {
-
-            // ProcessBuilder builder = new ProcessBuilder();
-            // builder.directory(new File(directory));
-            // builder.command("bash", "-c", command);
-            // builder.redirectOutput(Redirect.INHERIT);
-            // builder.redirectError(Redirect.INHERIT);
-            // System.out.println("Starting async command " + builder.command());
-
-            // String s;
-            // Process p = Runtime.getRuntime().exec(command, null, new File(directory));
-            // BufferedReader br = new BufferedReader(
-            //     new InputStreamReader(p.getInputStream()));
-            // while ((s = br.readLine()) != null)
-            //     System.out.println("line: " + s);
-            // p.waitFor();
-            // System.out.println ("exit: " + p.exitValue());
-            // p.destroy();
-
             ProcessBuilder builder = new ProcessBuilder();
             builder.directory(new File(directory));
             builder.command("bash", "-c", command);
@@ -82,7 +64,6 @@ public class DeployMojo extends AbstractMojo {
             builder.redirectError(Redirect.INHERIT);
             Process process = builder.start();
 
-            //Process process = Runtime.getRuntime().exec("bash -c \"" + command + "\"", null, new File(directory));
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             OutputStream outputStream = process.getOutputStream();
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
