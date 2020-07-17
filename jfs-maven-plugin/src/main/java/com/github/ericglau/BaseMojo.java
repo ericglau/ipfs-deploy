@@ -63,7 +63,7 @@ public abstract class BaseMojo extends AbstractMojo {
         }
     }
 
-    protected void runCommand(String directory, String command, String lookForString, String enterInput) throws MojoExecutionException {
+    protected void runCommand(String directory, String command, String lookForString, String enterInput, String exitTrigger, String restartTrigger) throws MojoExecutionException {
         try {
 
             ProcessBuilder builder = new ProcessBuilder();
@@ -84,8 +84,14 @@ public abstract class BaseMojo extends AbstractMojo {
                             log.debug("Found string: " + lookForString);
                             writer.write(enterInput + "\n");
                             writer.flush();
-                        } else if (line.contains("already initialized")) {
-                            log.info("Bucket is already initialized");
+                        } else if (exitTrigger != null && line.contains(exitTrigger)) {
+                            log.info(line);
+                            return;
+                        } else if (restartTrigger != null && line.contains(restartTrigger)) {
+                            log.info("Waiting 10 seconds to retry...");
+                            Thread.sleep(10000);
+                            log.info("Rerunning command...");
+                            runCommand(directory, command, lookForString, enterInput, exitTrigger, restartTrigger);
                             return;
                         }
                     }

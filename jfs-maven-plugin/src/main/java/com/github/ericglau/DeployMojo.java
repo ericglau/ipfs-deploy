@@ -23,7 +23,7 @@ public class DeployMojo extends BaseMojo {
 
     public void initBucket(String directory, String artifactId) throws MojoExecutionException {
         log.info("Deploying to Textile...");
-        runCommand(directory, "hub buck init", "Enter a name for your new bucket", "");
+        runCommand(directory, "hub buck init", "Enter a name for your new bucket", "", "already initialized", null);
         runCommandInteractive(directory, "hub buck push -y");
     }
 
