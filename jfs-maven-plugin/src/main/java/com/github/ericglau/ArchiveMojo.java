@@ -26,6 +26,7 @@ public class ArchiveMojo extends BaseMojo {
             runCommandInteractive(jfsDeployDir, "hub buck archive info");
         } else {
             runCommand(jfsDeployDir, "hub buck archive", "Archives are currently saved on an experimental test network", "y");
+            // TOD while "bucket FIL balance is zero" 
         }
     }
 
