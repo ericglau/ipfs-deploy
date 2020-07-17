@@ -10,7 +10,11 @@ import org.apache.maven.project.MavenProject;
 
 @Mojo(name = "deploy", defaultPhase = LifecyclePhase.INITIALIZE)
 public class DeployMojo extends AbstractMojo {
-    public void execute() throws MojoExecutionException, MojoFailureException {
 
+    @Parameter(property = "directory")
+    private String directory;
+
+    public void execute() throws MojoExecutionException, MojoFailureException {
+        System.out.println("dir = " + directory);
     }
 }

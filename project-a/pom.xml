@@ -15,4 +15,17 @@
 		</repository>
 	</distributionManagement>
 
+	<build>
+        <plugins>
+            <plugin>
+                <groupId>com.github.ericglau</groupId>
+                <artifactId>jfs-maven-plugin</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+                <configuration>
+                    <directory>/Users/eric/test</directory>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
 </project>
