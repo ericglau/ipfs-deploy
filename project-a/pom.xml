@@ -8,12 +8,12 @@
 
 	<name>project-a</name>
 
-	<distributionManagement>
+	<!-- <distributionManagement>
 		<repository>
 		  <id>local-dir</id>
 		  <url>file:///Users/eric/test</url>
 		</repository>
-	</distributionManagement>
+	</distributionManagement> -->
 
 	<build>
         <plugins>
@@ -21,9 +21,9 @@
                 <groupId>com.github.ericglau</groupId>
                 <artifactId>jfs-maven-plugin</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
-                <configuration>
+                <!-- <configuration>
                     <directory>/Users/eric/test</directory>
-				</configuration>
+				</configuration> -->
 			</plugin>
 		</plugins>
 	</build>
