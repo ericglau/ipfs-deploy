@@ -8,6 +8,11 @@
 
 	<name>project-b</name>
 
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
 	<repositories>
 		<repository>
 			<id>ipfs</id>
@@ -17,8 +22,8 @@
 			<!-- <url>http://bafkqjfqqfn53komslkntbfvnwt4d7ocqs3wx442p7us6ndvyxskcxia.thread.hub.next.textile.io/buckets/bafzbeigmaqmmaubmfhck6my5sxxnsg62u2ym4di4bkujgd62epe75xpw6i</url> -->
 			<!-- <url>https://bafybeib5mrm7b2bvnyx3mseeknfsxwvnqas2od2g74sqat6w3m5d3bbfhy.ipfs.dweb.link/</url> -->
 			<!-- <url>https://ericglau2-team-bucket.storage.fleek.co/test</url> -->
-			<!-- <url>ipfs://bafybeib5mrm7b2bvnyx3mseeknfsxwvnqas2od2g74sqat6w3m5d3bbfhy</url> -->
-			<url>https://ericglau2-team-bucket.storage.fleek.co/testkey</url>
+			<url>ipfs://bafybeib5mrm7b2bvnyx3mseeknfsxwvnqas2od2g74sqat6w3m5d3bbfhy</url>
+			<!-- <url>https://ericglau2-team-bucket.storage.fleek.co/testkey</url> -->
 			<snapshots>
                 <enabled>true</enabled>
             </snapshots>
