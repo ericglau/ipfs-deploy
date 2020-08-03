@@ -1,25 +1,16 @@
 package com.github.ericglau;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
-
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.rtf.RTFEditorKit;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 
-@Mojo(name = "deploy", defaultPhase = LifecyclePhase.DEPLOY)
-public class DeployMojo extends BaseMojo {
+@Mojo(name = "textile", defaultPhase = LifecyclePhase.DEPLOY)
+public class TextileMojo extends BaseMojo {
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         init();
