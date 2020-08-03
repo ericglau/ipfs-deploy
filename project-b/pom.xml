@@ -23,7 +23,7 @@
 			<!-- <url>https://bafybeib5mrm7b2bvnyx3mseeknfsxwvnqas2od2g74sqat6w3m5d3bbfhy.ipfs.dweb.link/</url> -->
 			<!-- <url>https://ericglau2-team-bucket.storage.fleek.co/test</url> -->
 			<url>ipfs://bafybeib5mrm7b2bvnyx3mseeknfsxwvnqas2od2g74sqat6w3m5d3bbfhy</url>
-			<!-- <url>https://ericglau2-team-bucket.storage.fleek.co/testkey</url> -->
+			<!-- <url>https://ericglau2-team-bucket.storage.fleek.co/testkey2</url> -->
 			<snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -45,7 +45,8 @@
         <extensions>
             <extension>
                 <groupId>com.github.ericglau</groupId>
-                <artifactId>wagon-ipfs-http</artifactId>
+				<artifactId>wagon-ipfs</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
             </extension>
         </extensions>
     </build>
