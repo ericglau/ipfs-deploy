@@ -80,9 +80,9 @@ public class FleekMojo extends BaseMojo {
         log.info("Getting Fleek S3 bucket: " + bucketName);
         Bucket b = getBucket(bucketName);
         if (b == null) {
-            log.info("Error getting bucket!\n");
+            log.info("Error getting bucket!");
         } else {
-            log.info("Done!\n");
+            log.info("Got bucket!");
         }
 
         TransferManager xfer_mgr = TransferManagerBuilder.standard().withS3Client(s3).build();
@@ -97,6 +97,9 @@ public class FleekMojo extends BaseMojo {
             log.error("Could not transfer to Fleek", e);
         }
         xfer_mgr.shutdownNow();
+
+        log.info("Successfully deployed to Fleek bucket:");
+        log.info("https://" + bucket + ".storage.fleek.co/" + (directory == null ? "" : directory));
     }
 
 }

@@ -45,10 +45,11 @@ public class TextileMojo extends BaseMojo {
 
         String url = threadLinkLine.substring(threadLinkLine.indexOf("http"), endOfSplitEndIndex);
 
-        log.info("Bucket URL: " + url);
+        log.info("Bucket returned URL: " + url);
 
         // get redirected url
         try {
+            log.info("Successfully deployed to Textile bucket:");
             log.info(getFinalURL(new URL(url)).toString());
         } catch (MalformedURLException e) {
             // TODO Auto-generated catch block
