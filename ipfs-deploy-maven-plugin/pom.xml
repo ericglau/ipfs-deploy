@@ -5,11 +5,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.github.ericglau</groupId>
-  <artifactId>jfs-maven-plugin</artifactId>
+  <artifactId>ipfs-deploy-maven-plugin</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
-  <name>jfs-maven-plugin</name>
+  <name>ipfs-deploy-maven-plugin</name>
   <!-- FIXME change it to the project's website -->
   <url>http://www.example.com</url>
 
