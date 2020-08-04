@@ -1,14 +1,10 @@
 # ifps-deploy
 Java tools for deploying to and reading from decentralized Maven repositories on [IPFS](https://ipfs.io/)/[Filecoin](https://filecoin.io/).
 
-## Pre-requisites
-- [Java](https://adoptopenjdk.net/)
-- [Maven](https://maven.apache.org/)
-
 ## Components
 
 ### [ipfs-deploy-maven-plugin](ipfs-deploy-maven-plugin)
-Maven plugin to deploy to Textile and Fleek buckets. Supports archiving to Filecoin testnet.
+Maven plugin for deploying a Java project to Textile or Fleek buckets. Supports archiving to Filecoin testnet.
 
 ### [samples/project-a](samples/project-a)
 Sample project that can be deployed to Textile or Fleek.
