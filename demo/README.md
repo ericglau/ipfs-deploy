@@ -53,7 +53,7 @@ rm -rf ~/.m2/repository/com/github/ericglau/project-a
 
 This scenario demonstrates `project-b` having a compile dependency on `project-a`, where `project-a` is available on Textile.
 
-9. Configure sample `project-b` to use your Textile bucket as a repository for its dependency by editing its `pom.xml`, and change the `<url>` value to the URL that you got in step 5.
+9. Configure sample `project-b` to use your Textile bucket as a repository for its dependency by editing its `pom.xml` and changing the `<url>` value to the URL that you got in step 5.
 
 10. Compile sample `project-b`. Notice it downloads the dependency from Textile and compiles successfully.
 
@@ -72,3 +72,20 @@ mvn clean ipfs-deploy:fleek -Dbucket=<your Fleek bucket name> -Ddirectory=<optio
 
 12. Take note of the last line from the console output which is the URL of the Fleek bucket (and optional subdirectory) where the project was deployed to.
 
+13. Clean up the local cache to ensure the subsequent step gets `project-a` from Fleek instead of locally.
+
+```
+rm -rf ~/.m2/repository/com/github/ericglau/project-a
+```
+
+### Using a Fleek repository
+
+This scenario demonstrates `project-b` having a compile dependency on `project-a`, where `project-a` is available on Fleek.
+
+14. Configure sample `project-b` to use your Fleek bucket as a repository for its dependency by editing its `pom.xml` and changing the `<url>` value to the URL that you got in step 12.
+
+15. Compile sample `project-b`. Notice it downloads the dependency from Fleek and compiles successfully.
+
+```
+mvn clean compile
+```
