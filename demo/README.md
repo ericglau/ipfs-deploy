@@ -82,7 +82,7 @@ mvn clean compile -U
 
 This scenario demonstrates `project-b` having a compile dependency on `project-a`, where `project-a` is available at an IPFS URL e.g. `ipfs://`.
 
-14. Clean up the local cache to ensure the subsequent step gets `project-a` from IPFS.
+14. Clean up the local cache.
 ```
 rm -rf ~/.m2/repository/com/github/ericglau/project-a
 ```
