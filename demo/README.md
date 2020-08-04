@@ -26,7 +26,7 @@ Sample project for consuming a dependency from a Textile, Fleek, or IPFS reposit
 
 ```
 cd demo/project-a
-mvn clean install ipfs-deploy:textile
+mvn clean ipfs-deploy:textile
 ```
 
 5. Take note of the last line from the console output which is the URL of the Textile bucket that was created.
@@ -60,4 +60,15 @@ This scenario demonstrates `project-b` having a compile dependency on `project-a
 ```
 mvn clean compile
 ```
+
+### Deploying to Fleek Storage
+
+11. Deploy sample `project-a` to Textile bucket.  Set `-Dbucket` to your bucket name from the Fleek Storage app e.g. `-Dbucket=ericglau-team-bucket`.  The `-Ddirectory` is optional but can be used to specify a subdirectory within your Fleek bucket to upload to.
+
+```
+cd ../project-a
+mvn clean ipfs-deploy:fleek -Dbucket=<your Fleek bucket name> -Ddirectory=<optional subdirectory>
+```
+
+12. Take note of the last line from the console output which is the URL of the Fleek bucket (and optional subdirectory) where the project was deployed to.
 
