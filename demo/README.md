@@ -45,5 +45,10 @@ mvn ipfs-deploy:archive -Dstatus
 rm -rf ~/.m2/repository/com/github/ericglau/project-a
 ```
 
-9. Configure sample `project-b` to use your Textile bucket as a repository for its dependency by editing its `pom.xml` as follows:
+9. Configure sample `project-b` to use your Textile bucket as a repository for its dependency by editing its `pom.xml`, and change the `<url>` value to the URL that you got in step 5.
 
+10. Compile sample `project-b`.
+
+```
+mvn clean compile
+```
