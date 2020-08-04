@@ -17,3 +17,33 @@ Sample project for consuming a dependency from a Textile, Fleek, or IPFS reposit
 2. Build [ipfs-deploy-maven-plugin](../ipfs-deploy-maven-plugin) according to its instructions and configure Textile CLI and/or Fleek API keys.
 
 3. Build [wagon-ipfs](../wagon-ipfs) according to its instructions.
+
+4. Deploy sample `project-a` to Textile bucket.
+
+```
+cd demo/project-a
+mvn clean install ipfs-deploy:textile
+```
+
+5. Take note of the last line from the console output which is the URL of the Textile bucket that was created.
+
+6. Archive the Textile bucket to Filecoin testnet.
+
+```
+mvn ipfs-deploy:archive
+```
+
+7. View Filecoin archival status. (This can take hours. You can cancel with CTRL-C and view the status again later.)
+
+```
+mvn ipfs-deploy:archive -Dstatus
+```
+
+8. Clean up the local cache to ensure the subsequent step gets `project-a` from Textile instead of locally.
+
+```
+rm -rf ~/.m2/repository/com/github/ericglau/project-a
+```
+
+9. Configure sample `project-b` to use your Textile bucket as a repository for its dependency by editing its `pom.xml` as follows:
+
