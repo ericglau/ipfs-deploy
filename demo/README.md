@@ -47,68 +47,55 @@ mvn ipfs-deploy:archive -Dstatus
 
 This scenario demonstrates `project-b` having a compile dependency on `project-a`, where `project-a` is available on Textile.
 
-8. Clean up the local cache to ensure the subsequent step gets `project-a` from Textile instead of locally.
+8. Configure sample `project-b` to use your Textile bucket as a repository for its dependency by editing its `pom.xml` and changing the `<url>` value to the URL that you got in step 5.
+
+9. Compile sample `project-b`. Notice it downloads the dependency from Textile and compiles successfully.
 
 ```
-rm -rf ~/.m2/repository/com/github/ericglau/project-a
-```
-
-9. Configure sample `project-b` to use your Textile bucket as a repository for its dependency by editing its `pom.xml` and changing the `<url>` value to the URL that you got in step 5.
-
-10. Compile sample `project-b`. Notice it downloads the dependency from Textile and compiles successfully.
-
-```
-mvn clean compile
+mvn clean compile -U
 ```
 
 ### Deploying to Fleek Storage
 
-11. Deploy sample `project-a` to Textile bucket.  Set `-Dbucket` to your bucket name from the Fleek Storage app e.g. `-Dbucket=ericglau-team-bucket`.  The `-Ddirectory` is optional but can be used to specify a subdirectory within your Fleek bucket to upload to.
+10. Deploy sample `project-a` to Textile bucket.  Set `-Dbucket` to your bucket name from the Fleek Storage app e.g. `-Dbucket=ericglau-team-bucket`.  The `-Ddirectory` is optional but can be used to specify a subdirectory within your Fleek bucket to upload to.
 
 ```
 cd ../project-a
 mvn clean ipfs-deploy:fleek -Dbucket=<your Fleek bucket name> -Ddirectory=<optional subdirectory>
 ```
 
-12. Take note of the last line from the console output which is the URL of the Fleek bucket (and optional subdirectory) where the project was deployed to.
+11. Take note of the last line from the console output which is the URL of the Fleek bucket (and optional subdirectory) where the project was deployed to.
 
 ### Using a Fleek repository
 
 This scenario demonstrates `project-b` having a compile dependency on `project-a`, where `project-a` is available on Fleek.
 
-13. Clean up the local cache to ensure the subsequent step gets `project-a` from Fleek instead of locally.
+12. Configure sample `project-b` to use your Fleek bucket as a repository for its dependency by editing its `pom.xml` and changing the `<url>` value to the URL that you got in step 11.
+
+13. Compile sample `project-b`. Notice it downloads the dependency from Fleek and compiles successfully.
 
 ```
-rm -rf ~/.m2/repository/com/github/ericglau/project-a
-```
-
-14. Configure sample `project-b` to use your Fleek bucket as a repository for its dependency by editing its `pom.xml` and changing the `<url>` value to the URL that you got in step 12.
-
-15. Compile sample `project-b`. Notice it downloads the dependency from Fleek and compiles successfully.
-
-```
-mvn clean compile
+mvn clean compile -U
 ```
 
 ### Using a native IPFS repository
 
 This scenario demonstrates `project-b` having a compile dependency on `project-a`, where `project-a` is available at an IPFS URL e.g. `ipfs://`.
 
-16. Clean up the local cache to ensure the subsequent step gets `project-a` from IPFS instead of locally.
-
+14. Clean up the local cache to ensure the subsequent step gets `project-a` from IPFS.
 ```
 rm -rf ~/.m2/repository/com/github/ericglau/project-a
 ```
 
-17. Notice `project-b` is configured with the provided [wagon-ipfs](../wagon-ipfs) build extension, which allows the build process to handle IPFS URLs.
+15. Notice `project-b` is configured with the provided [wagon-ipfs](../wagon-ipfs) build extension, which allows the build process to handle IPFS URLs.
 
-18. Configure sample `project-b` to use an IPFS URL as a repository for its dependency by editing its `pom.xml` and changing the `<url>` value to the following:
+16. Configure sample `project-b` to use an IPFS URL as a repository for its dependency by editing its `pom.xml` and changing the `<url>` value to the following:
 ```
 <url>ipfs://bafybeib5mrm7b2bvnyx3mseeknfsxwvnqas2od2g74sqat6w3m5d3bbfhy</url>
 ```
 
-19. Compile sample `project-b`. Notice it downloads the dependency from the IPFS URL and compiles successfully.
+17. Compile sample `project-b`. Notice it downloads the dependency from the IPFS URL and compiles successfully.
 
 ```
-mvn clean compile
+mvn clean compile -U
 ```
