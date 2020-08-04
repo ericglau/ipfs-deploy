@@ -1,22 +1,20 @@
 # ifps-deploy
-Java tools for deploying to and reading from decentralized Maven repositories on IPFS/Filecoin.
+Java tools for deploying to and reading from decentralized Maven repositories on [IPFS](https://ipfs.io/)/[Filecoin](https://filecoin.io/).
 
-### Pre-requisites
+## Pre-requisites
 - [Java](https://adoptopenjdk.net/)
 - [Maven](https://maven.apache.org/)
 
+## Components
+
 ### ipfs-deploy-maven-plugin
-Maven plugin to deploy to Textile and Fleek buckets.  
-- Deploy to Textile bucket: `mvn ipfs-deploy:textile`
-- Archive Textile bucket to Filecoin: `mvn ipfs-deploy:archive`
-- View Textile to Filecoin archival status: `mvn ipfs-deploy:archive -Dstatus`
-- Deploy to Fleek bucket: `mvn ipfs-deploy:fleek -Dbucket=<your Fleek bucket name> -Ddirectory=<optional bucket directory>`
+Maven plugin to deploy to Textile and Fleek buckets. Supports archiving to Filecoin testnet.
 
 ### sample/project-a
-Sample project for deploying to Textile or Fleek.
+Sample project that can be deployed to Textile or Fleek.
 
 ### sample/project-b
-Sample project for consuming a dependency from a Textile or Fleek or IPFS-native repository.
+Sample project for consuming a dependency from a Textile, Fleek, or IPFS repository.
 
 ### wagon-ipfs
 [Maven Wagon](https://github.com/apache/maven-wagon) extension to allow reading from a repository using `ipfs://` url format.
