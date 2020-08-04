@@ -4,6 +4,12 @@ Maven plugin to deploy to Textile and Fleek buckets.
 ### Build
 `mvn install`
 
+### Textile requirements:
+- [Textile Hub CLI](https://docs.textile.io/) (Hub Next required for archiving to Filecoin testnet)
+
+### Fleek requirements:
+- Enter your Fleek API key and secret in `~/.aws/credentials` according to [AWS SDK documentation](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html).
+
 ### Setup
 Enable the plugin by adding the following into your `pom.xml`:
 ```
