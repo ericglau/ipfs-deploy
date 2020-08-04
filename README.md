@@ -15,9 +15,3 @@ Maven Wagon extension to allow reading from a repository using `ipfs://` url for
 
 ### [demo](demo)
 End to end demo.
-
-#### [demo/project-a](demo/project-a)
-Sample project that can be deployed to Textile or Fleek.
-
-#### [demo/project-b](demo/project-b)
-Sample project for consuming a dependency from a Textile, Fleek, or IPFS repository.
