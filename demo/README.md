@@ -22,6 +22,8 @@ Sample project for consuming a dependency from a Textile, Fleek, or IPFS reposit
 
 ### Deploying to Textile and archiving to Filecoin
 
+**This scenario demonstrates how to deploy a Java package repository to Textile and archive it to Filecoin.**
+
 4. Deploy sample `project-a` to Textile bucket.
 
 ```
@@ -45,7 +47,7 @@ mvn ipfs-deploy:archive -Dstatus
 
 ### Using a Textile repository
 
-This scenario demonstrates `project-b` having a compile dependency on `project-a`, where `project-a` is available on Textile.
+**This scenario demonstrates `project-b` having a compile dependency on `project-a`, where `project-a` is available on Textile.**
 
 8. Configure sample `project-b` to use your Textile bucket as a repository for its dependency by editing its `pom.xml` and changing the `<url>` value to the URL that you got in step 5.
 
@@ -56,6 +58,8 @@ mvn clean compile -U
 ```
 
 ### Deploying to Fleek Storage
+
+**This scenario demonstrates how to deploy a Java package repository to Fleek Storage.**
 
 10. Deploy sample `project-a` to Textile bucket.  Set `-Dbucket` to your bucket name from the Fleek Storage app e.g. `-Dbucket=ericglau-team-bucket`.  The `-Ddirectory` is optional but can be used to specify a subdirectory within your Fleek bucket to upload to.
 
@@ -68,7 +72,7 @@ mvn clean ipfs-deploy:fleek -Dbucket=<your Fleek bucket name> -Ddirectory=<optio
 
 ### Using a Fleek repository
 
-This scenario demonstrates `project-b` having a compile dependency on `project-a`, where `project-a` is available on Fleek.
+**This scenario demonstrates `project-b` having a compile dependency on `project-a`, where `project-a` is available on Fleek Storage.**
 
 12. Configure sample `project-b` to use your Fleek bucket as a repository for its dependency by editing its `pom.xml` and changing the `<url>` value to the URL that you got in step 11.
 
@@ -80,7 +84,7 @@ mvn clean compile -U
 
 ### Using a native IPFS repository
 
-This scenario demonstrates `project-b` having a compile dependency on `project-a`, where `project-a` is available at an IPFS URL e.g. `ipfs://`.
+**This scenario demonstrates `project-b` having a compile dependency on `project-a`, where `project-a` is available at an IPFS URL e.g. `ipfs://`.**
 
 14. Clean up the local cache.
 ```
