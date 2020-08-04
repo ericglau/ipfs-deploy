@@ -1,4 +1,4 @@
-# ipfs-deploy
+# IPFS Deploy for Java
 Java tools for deploying to and reading from decentralized Maven repositories on [IPFS](https://ipfs.io/)/[Filecoin](https://filecoin.io/).
 
 ## Pre-requisites
