@@ -20,7 +20,7 @@ Sample project for consuming a dependency from a Textile, Fleek, or IPFS reposit
 
 3. Build [wagon-ipfs](../wagon-ipfs) according to its instructions.
 
-### Deploying to Textile and Filecoin
+### Deploying to Textile, archiving to Filecoin
 
 4. Deploy sample `project-a` to Textile bucket.
 
