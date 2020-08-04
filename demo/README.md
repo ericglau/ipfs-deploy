@@ -1,6 +1,6 @@
 # IPFS Deploy demo
 
-End to end demo of IPFS Deploy for Java.
+End to end demo of [IPFS Deploy for Java](https://github.com/ericglau/ipfs-deploy).
 
 ## Sample projects
 
