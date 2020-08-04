@@ -51,9 +51,11 @@ rm -rf ~/.m2/repository/com/github/ericglau/project-a
 
 ### Using a Textile repository
 
+This scenario demonstrates `project-b` having a compile dependency on `project-a`, where `project-a` is available on Textile.
+
 9. Configure sample `project-b` to use your Textile bucket as a repository for its dependency by editing its `pom.xml`, and change the `<url>` value to the URL that you got in step 5.
 
-10. Compile sample `project-b`.
+10. Compile sample `project-b`. Notice it downloads the dependency from Textile and compiles successfully.
 
 ```
 mvn clean compile
