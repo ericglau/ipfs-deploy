@@ -4,7 +4,7 @@
 ### Build
 `mvn install`
 
-### Usage
+### Setup
 Enable the extension by adding the following into your `pom.xml` file:
 ```
     <build>
@@ -18,7 +18,8 @@ Enable the extension by adding the following into your `pom.xml` file:
     </build>
 ```
 
-Then you can use an `ipfs://` URL as a Maven repository, for example:
+### Usage
+Use an `ipfs://` URL as a Maven repository, for example:
 ```
     <repositories>
         <repository>
