@@ -13,14 +13,14 @@
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
-	<build>
+    <build>
         <plugins>
             <plugin>
                 <groupId>com.github.ericglau</groupId>
                 <artifactId>ipfs-deploy-maven-plugin</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
-			</plugin>
-		</plugins>
-	</build>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

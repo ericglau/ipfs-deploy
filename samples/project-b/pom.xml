@@ -13,25 +13,25 @@
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
-	<repositories>
-		<repository>
-			<id>ipfs</id>
-			<name>IPFS</name>
+    <repositories>
+        <repository>
+            <id>ipfs</id>
+            <name>IPFS</name>
 			<!-- <url>file:///tmp/test</url>  -->
 			<!-- <url>https://bafkt5edpkmbejifojfarn2wawtc62t36gy4te7bftd64cgjsy7gv2ui.thread.hub.textile.io/buckets/bafzbeidxwtnl7mwj62s35b75cezp2lzsbbecwcv3gt4kmz5qsc2zlqjhsu</url> -->
 			<!-- <url>http://bafkqjfqqfn53komslkntbfvnwt4d7ocqs3wx442p7us6ndvyxskcxia.thread.hub.next.textile.io/buckets/bafzbeigmaqmmaubmfhck6my5sxxnsg62u2ym4di4bkujgd62epe75xpw6i</url> -->
 			<!-- <url>https://bafybeib5mrm7b2bvnyx3mseeknfsxwvnqas2od2g74sqat6w3m5d3bbfhy.ipfs.dweb.link/</url> -->
 			<!-- <url>https://ericglau2-team-bucket.storage.fleek.co/test</url> -->
-			<url>ipfs://bafybeib5mrm7b2bvnyx3mseeknfsxwvnqas2od2g74sqat6w3m5d3bbfhy</url>
+            <url>ipfs://bafybeib5mrm7b2bvnyx3mseeknfsxwvnqas2od2g74sqat6w3m5d3bbfhy</url>
 			<!-- <url>https://ericglau2-team-bucket.storage.fleek.co/testkey2</url> -->
-			<snapshots>
+            <snapshots>
                 <enabled>true</enabled>
             </snapshots>
             <releases>
                 <enabled>false</enabled>
             </releases>
-		</repository>
-	 </repositories>
+        </repository>
+    </repositories>
 
 	 <dependencies>
 		<dependency>
@@ -41,12 +41,12 @@
 		</dependency>
 	</dependencies>
 
-	<build>
+    <build>
         <extensions>
             <extension>
                 <groupId>com.github.ericglau</groupId>
-				<artifactId>wagon-ipfs</artifactId>
-				<version>0.0.1-SNAPSHOT</version>
+                <artifactId>wagon-ipfs</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
             </extension>
         </extensions>
     </build>
