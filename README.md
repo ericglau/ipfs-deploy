@@ -17,4 +17,4 @@ Sample project that can be deployed to Textile or Fleek.
 Sample project for consuming a dependency from a Textile, Fleek, or IPFS repository.
 
 ### [wagon-ipfs](wagon-ipfs)
-[Maven Wagon](https://github.com/apache/maven-wagon) extension to allow reading from a repository using `ipfs://` url format.
+Maven Wagon extension to allow reading from a repository using `ipfs://` url format.
