@@ -13,6 +13,20 @@
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
+    <pluginRepositories>
+        <pluginRepository>
+            <id>ipfs-deploy</id>
+            <name>IPFS Deploy for Java</name>
+            <url>https://ericglau2-team-bucket.storage.fleek.co/ipfs-deploy</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
+
     <build>
         <plugins>
             <plugin>
