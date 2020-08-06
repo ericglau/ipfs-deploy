@@ -16,7 +16,7 @@ Sample project for consuming a dependency from a Textile, Fleek, or IPFS reposit
 
 1. Clone the project: `git clone https://github.com/ericglau/ifps-deploy.git`
 
-2. Build [ipfs-deploy-maven-plugin](../ipfs-deploy-maven-plugin) according to its instructions and configure Textile CLI and/or Fleek API keys.
+2. Configure Textile CLI and/or Fleek API keys according to instructions on [ipfs-deploy-maven-plugin](../ipfs-deploy-maven-plugin). You don't need to build the plugin because it's already deployed on a repository on Fleek!
 
 3. Build [wagon-ipfs](../wagon-ipfs) according to its instructions.
 
