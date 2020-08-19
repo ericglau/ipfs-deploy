@@ -61,7 +61,7 @@ mvn clean compile -U
 
 **This scenario demonstrates how to deploy a Java package repository to Fleek Storage.**
 
-10. Deploy sample `project-a` to Textile bucket.  Set `-Dbucket` to your bucket name from the Fleek Storage app e.g. `-Dbucket=ericglau-team-bucket`.  The `-Ddirectory` is optional but can be used to specify a subdirectory within your Fleek bucket to upload to.
+10. Deploy sample `project-a` to Fleek bucket.  Set `-Dbucket` to your bucket name from the Fleek Storage app e.g. `-Dbucket=ericglau-team-bucket`.  The `-Ddirectory` is optional but can be used to specify a subdirectory within your Fleek bucket to upload to.
 
 ```
 cd ../project-a
