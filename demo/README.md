@@ -33,7 +33,7 @@ mvn clean ipfs-deploy:textile
 
 5. Take note of the last line from the console output which is the URL of the Textile bucket that was created.
 
-6. Archive the Textile bucket to Filecoin testnet.
+6. Archive the Textile bucket to Filecoin.
 
 ```
 mvn ipfs-deploy:archive
