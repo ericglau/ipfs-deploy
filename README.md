@@ -8,7 +8,7 @@ Java tools for deploying to and reading from decentralized Maven repositories on
 ## Components
 
 ### [ipfs-deploy-maven-plugin](ipfs-deploy-maven-plugin)
-Maven plugin for deploying a Java project to Textile or Fleek buckets. Supports archiving to Filecoin.
+Maven plugin for deploying a Java project to Textile or Fleek buckets. Supports archiving to Filecoin for long-term storage.
 
 ### [wagon-ipfs](wagon-ipfs)
 Maven Wagon extension to allow reading from a repository using `ipfs://` url format.
